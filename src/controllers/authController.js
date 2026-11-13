@@ -1,6 +1,6 @@
 const bcrypt = require("bcryptjs");
 const User = require("../models/User");
-
+const jwt = require("jsonwebtoken");
 // تسجيل مستخدم جديد
 const register = async (req, res) => {
   try {
@@ -35,5 +35,33 @@ const register = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+// fonction mta3 el connexion (login)
+const login = async (req, res) => {
+  try {
+    const { login, password } = req.body;
 
-module.exports = { register };
+    // nlawjou 3al user bel login
+    const user = await User.findOne({ login });
+    if (!user) {
+      return res.status(401).json({ message: "Login ou mot de passe incorrect" });
+    }
+
+    // nqarnou el password elli ktebou m3a el hash elli fel base
+    const ok = await bcrypt.compare(password, user.password);
+    if (!ok) {
+      return res.status(401).json({ message: "Login ou mot de passe incorrect" });
+    }
+
+    // nasn3ou el token (el "bracelet"), yekhdem 1 jour
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    res.json({ token });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+module.exports = { register, login };
