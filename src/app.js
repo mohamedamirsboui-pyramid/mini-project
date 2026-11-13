@@ -1,7 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
-
+const { protect, isManager } = require("./middlewares/auth");
 const app = express();
 
 // bech el server yfahem el JSON elli ykhallih el user (req.body)
@@ -34,3 +34,11 @@ mongoose
   .catch((err) => {
     console.log("MongoDB error:", err.message);
   });
+// routes mta3 test, nfasskhouhom ba3d
+app.get("/me", protect, (req, res) => {
+  res.json(req.user);
+});
+
+app.get("/manager-only", protect, isManager, (req, res) => {
+  res.send("Welcome manager");
+});
